@@ -1,0 +1,16 @@
+GET /api/users:
+  status: 200
+  headers:
+    Content-Type: application/json
+  body: |
+    [
+      { "id": 1, "name": "Alice" },
+      { "id": 2, "name": "Bob" }
+    ]
+
+POST /api/login:
+  status: 401
+  headers:
+    Content-Type: application/json
+  body: |
+    { "error": "Unauthorized" }

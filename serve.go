@@ -65,6 +65,10 @@ func StartServer() error {
 }
 
 func serveFileWithInjection(w http.ResponseWriter, r *http.Request) {
+	if HandleAPIRequest(w, r) {
+		return
+	}
+
 	relPath := strings.TrimPrefix(r.URL.Path, "/")
 	if relPath == "" {
 		relPath = "index.html"

@@ -33,5 +33,11 @@ func LoadConfig() error {
 		return fmt.Errorf("unable to decode into struct: %w", err)
 	}
 
+	if AppConfig.API {
+		if err := LoadAPIResponses(); err != nil {
+			return fmt.Errorf("failed to load api.yaml: %w", err)
+		}
+	}
+
 	return nil
 }

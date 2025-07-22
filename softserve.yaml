@@ -1,8 +1,8 @@
-web_root: examples/basic
+web_root: examples/api
 ssl: false
 generate_certs: false
 http_port: 8080
 https_port: 8443
 log_level: info
-api: false
+api: true
 api_prefix: /api/
