@@ -1,5 +1,6 @@
 function getUsers() {
-  fetch("/api/users")
+  const fetchUrl = "/api/users";
+  fetch(fetchUrl)
     .then((res) => res.json())
     .then((data) => {
       document.getElementById("output").textContent = JSON.stringify(data, null, 2);
@@ -10,18 +11,20 @@ function getUsers() {
 }
 
 function getClients() {
-  fetch("/api/clients")
+  const fetchUrl = "/api/clients";
+  fetch(fetchUrl)
     .then((res) => res.json())
     .then((data) => {
       document.getElementById("output").textContent = JSON.stringify(data, null, 2);
     })
     .catch((err) => {
-      document.getElementById("output").textContent = "Error: 404. Ensure you have the '/api/clients' route moked in your api.yaml";
+      document.getElementById("output").textContent = "Error: " + err;
     });
 }
 
 function postLogin() {
-  fetch("/api/login", {
+  const fetchUrl = "/api/login";
+  fetch(fetchUrl, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"

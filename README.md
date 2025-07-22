@@ -22,6 +22,26 @@
 
 ---
 
+### ✅ Frontend Works Out of the Box
+
+Your frontend doesn’t need any special headers, credentials, or port remapping. It simply generates mock responses for api calls — just as if the backend were alive.
+
+This means:
+
+* You can test **error cases** by returning status codes like 401, 403, or 500.
+* You can **simulate latency** by adding it later as an advanced feature.
+* You can **fully prototype** frontends without scaffolding a backend.
+
+#### 🔄 No-Touch = No Code
+
+✅ You do **not** need to:
+
+* Add any custom routes in Go
+* Define new handlers or switch statements
+* Recompile the server
+
+Everything is driven entirely by the contents of `api.yaml`.
+
 ## 🛠️ Installation
 
 Clone and build:
@@ -153,18 +173,6 @@ The **Mock API** feature in *softserve* is a completely *no-touch* system — it
 
 ---
 
-### 🔄 No-Touch = No Code
-
-✅ You do **not** need to:
-
-* Add any custom routes in Go
-* Define new handlers or switch statements
-* Recompile the server
-
-Everything is driven entirely by the contents of `api.yaml`.
-
----
-
 ### 🧪 Example Flow
 
 #### 1. `softserve.yaml`
@@ -215,29 +223,39 @@ curl http://localhost:8080/api/users
   { "id": 2, "name": "Bob" }
 ]
 ```
-
----
-
-### ✅ Frontend Works Out of the Box
-
-Your frontend doesn’t need any special headers, credentials, or port remapping. It simply fetches `/api/...` and gets a mock response — just as if the backend were alive.
-
-This means:
-
-* You can test **error cases** by returning status codes like 401, 403, or 500.
-* You can **simulate latency** by adding it later as an advanced feature.
-* You can **fully prototype** frontends without scaffolding a backend.
-
----
-
-Would you like me to insert this into your `README.md` now, or do you want to include this as a separate `docs/api-mocking.md` file too?
-
-
 ---
 
 ## 🔐 HTTPS (optional)
 
-> *Coming soon* — toggle with `ssl: true` and generate self-signed certs via `--generate-certs`.
+This tool will autogenerate certs if requested in the `softserve.yaml` config. **If `ssl: true` or `generate_certs: true`, `certs_path` is also required as an absolute path and the `certs_path` must already exist.**
+
+Example `softserve.yaml`:
+```
+web_root: examples/api
+ssl: true                                        # Must be true for SSL
+certs_path: /home/matt/projects/softserve/certs  # Required if ssl: true
+generate_certs: true                             # Generate self-signed certs
+http_port: 8080
+https_port: 8443
+log_level: info
+api: true
+api_prefix: /api/
+```
+
+Example output when `generate_certs: true`:
+
+```
+✅ Config loaded successfully
+📂 Web root: examples/api
+Checking for existing cert path: '/home/matt/projects/softserve/certs'
+  Success: Path is an absolute, existing directory.
+🔐 Generated self-signed cert at /home/matt/projects/softserve/certs/
+SSL: Loading Cert files:
+  >>> /home/matt/projects/softserve/certs/cert.pem
+  >>> /home/matt/projects/softserve/certs/key.pem
+🔒 Serving HTTPS on https://0.0.0.0:8443
+
+```
 
 ---
 

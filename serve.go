@@ -11,8 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 	"time"
-
-	"golang.org/x/net/websocket"
 )
 
 func StartServer() error {
@@ -20,55 +18,75 @@ func StartServer() error {
 
 	mux := http.NewServeMux()
 
-	// WebSocket route
-	mux.Handle("/__ws", websocket.Handler(func(ws *websocket.Conn) {
-		hub.mu.Lock()
-		hub.clients[ws] = true
-		hub.mu.Unlock()
-
-		// Block until disconnect
-		buf := make([]byte, 1)
-		ws.Read(buf)
-
-		hub.mu.Lock()
-		delete(hub.clients, ws)
-		hub.mu.Unlock()
+	// WebSocket endpoint
+	mux.Handle("/__ws", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		hub.handleWebSocket(w, r)
 	}))
 
-	// File server route
+	// Static + API + injected HTML handler
 	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if HandleAPIRequest(w, r) {
+			return
+		}
 		serveFileWithInjection(w, r)
 	})
 
 	go watchForChanges(AppConfig.WebRoot, hub)
 
 	server := &http.Server{
-		Addr:    fmt.Sprintf(":%d", AppConfig.HTTPPort),
+		Addr:    "", // Set below
 		Handler: mux,
 	}
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	go func() {
-		fmt.Printf("🌐 Serving %s on http://0.0.0.0:%d\n", AppConfig.WebRoot, AppConfig.HTTPPort)
-		if err := server.ListenAndServe(); err != http.ErrServerClosed {
-			log.Fatalf("Server error: %v", err)
+	if AppConfig.SSL {
+		// Default fallback
+		if AppConfig.CertsPath == "" {
+			AppConfig.CertsPath = "certs"
 		}
-	}()
+
+		certPath := filepath.Join(AppConfig.CertsPath, "cert.pem")
+		keyPath := filepath.Join(AppConfig.CertsPath, "key.pem")
+
+		if AppConfig.GenerateCerts {
+			if err := GenerateSelfSignedCert(AppConfig.CertsPath); err != nil {
+				return fmt.Errorf("cert generation failed: %w", err)
+			}
+		}
+
+		fmt.Println("SSL: Loading Cert files:")
+		fmt.Println("  >>>", certPath)
+		fmt.Println("  >>>", keyPath)
+
+		server.Addr = fmt.Sprintf(":%d", AppConfig.HTTPSPort)
+		go func() {
+			fmt.Printf("🔒 Serving HTTPS on https://0.0.0.0:%d\n", AppConfig.HTTPSPort)
+			if err := server.ListenAndServeTLS(certPath, keyPath); err != http.ErrServerClosed {
+				log.Fatalf("Server error: %v", err)
+			}
+
+		}()
+	} else {
+		server.Addr = fmt.Sprintf(":%d", AppConfig.HTTPPort)
+		go func() {
+			fmt.Printf("🌐 Serving HTTP on http://0.0.0.0:%d\n", AppConfig.HTTPPort)
+			if err := server.ListenAndServe(); err != http.ErrServerClosed {
+				log.Fatalf("Server error: %v", err)
+			}
+		}()
+	}
 
 	<-ctx.Done()
 	fmt.Println("🛑 Shutting down...")
+
 	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 	return server.Shutdown(shutdownCtx)
 }
 
 func serveFileWithInjection(w http.ResponseWriter, r *http.Request) {
-	if HandleAPIRequest(w, r) {
-		return
-	}
-
 	relPath := strings.TrimPrefix(r.URL.Path, "/")
 	if relPath == "" {
 		relPath = "index.html"
@@ -91,10 +109,15 @@ func serveFileWithInjection(w http.ResponseWriter, r *http.Request) {
 }
 
 func injectReloadScript(html string) string {
-	script := `<script>
-		const ws = new WebSocket("ws://" + location.host + "/__ws");
+	wsScheme := "ws"
+	if AppConfig.SSL {
+		wsScheme = "wss"
+	}
+
+	script := fmt.Sprintf(`<script>
+		const ws = new WebSocket("%s://" + location.host + "/__ws");
 		ws.onmessage = () => location.reload();
-	</script>`
+	</script>`, wsScheme)
 
 	if strings.Contains(html, "</body>") {
 		return strings.Replace(html, "</body>", script+"</body>", 1)
