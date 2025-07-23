@@ -3,7 +3,7 @@ package softserve
 
 import (
 	"fmt"
-	"path/filepath"
+	"os"
 
 	"github.com/spf13/viper"
 )
@@ -35,7 +35,11 @@ func LoadConfig() error {
 		return fmt.Errorf("unable to decode into struct: %w", err)
 	}
 
+	// === IMPORTANT: Add this line to convert the path after unmarshaling ===
+	AppConfig.CertsPath = ConvertPath(AppConfig.CertsPath)
+
 	if AppConfig.API {
+		// Assuming LoadAPIResponses is defined elsewhere in the 'softserve' package
 		if err := LoadAPIResponses(); err != nil {
 			return fmt.Errorf("failed to load api.yaml: %w", err)
 		}
@@ -45,8 +49,13 @@ func LoadConfig() error {
 		if AppConfig.CertsPath == "" {
 			return fmt.Errorf("certs_path is required when ssl is enabled")
 		}
-		if !filepath.IsAbs(AppConfig.CertsPath) {
-			return fmt.Errorf("certs_path must be an absolute path: got %q", AppConfig.CertsPath)
+
+		// EnsureAbsoluteAndExists will now receive an already-converted path on Windows
+		if err := EnsureAbsoluteAndExists(AppConfig.CertsPath); err != nil {
+			fmt.Printf("  Error: %v\n\n", err)
+			os.Exit(1)
+		} else {
+			fmt.Printf("  Success: certs_path is an absolute, existing directory.\n")
 		}
 	}
 

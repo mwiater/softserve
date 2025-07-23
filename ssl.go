@@ -19,7 +19,7 @@ func GenerateSelfSignedCert(path string) error {
 	keyPath := filepath.Join(path, "key.pem")
 
 	fmt.Printf("Checking for existing cert path: '%s'\n", path)
-	if err := ensureAbsoluteAndExists(path); err != nil {
+	if err := EnsureAbsoluteAndExists(path); err != nil {
 		fmt.Printf("  Error: %v\n\n", err)
 		os.Exit(1)
 	} else {
@@ -74,34 +74,5 @@ func GenerateSelfSignedCert(path string) error {
 	pem.Encode(keyOut, &pem.Block{Type: "RSA PRIVATE KEY", Bytes: x509.MarshalPKCS1PrivateKey(priv)})
 
 	fmt.Printf("🔐 Generated self-signed cert at %s/\n", path)
-	return nil
-}
-
-// ensureAbsoluteAndExists checks if the given path is an absolute path
-// and if it already exists as a directory. It returns an error if
-// either condition is not met.
-func ensureAbsoluteAndExists(path string) error {
-	// 1. Check if the path is absolute
-	if !filepath.IsAbs(path) {
-		return fmt.Errorf("path is not absolute: %s", path)
-	}
-
-	// 2. Check if the path exists and is a directory
-	fileInfo, err := os.Stat(path)
-	if err != nil {
-		if os.IsNotExist(err) {
-			// Path does not exist, which is the desired error condition
-			return fmt.Errorf("path does not exist: %s", path)
-		}
-		// Some other error occurred while trying to stat the path (e.g., permissions)
-		return fmt.Errorf("failed to stat path %s: %w", path, err)
-	}
-
-	// 3. Check if the existing path is a directory
-	if !fileInfo.IsDir() {
-		return fmt.Errorf("path exists but is not a directory: %s", path)
-	}
-
-	// If all checks pass, the path is an absolute, existing directory
 	return nil
 }
