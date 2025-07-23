@@ -1,6 +1,8 @@
 ## 📦 softserve
 
-**Softserve** is a blazing-fast static file server built in Go, designed for front-end developers and full-stack prototypers. It includes:
+**NOTE:** Flipping this repo public as I've been using it a lot and a coworker asked me for the code. **It's still at the beginning stages**, but it's in a working state. Use wisely and at your own discretion! It's part of my current no-code instrumentation/tool kick.
+
+**Softserve** is a static file server built in Go, designed for front-end developers and full-stack prototypers. It includes:
 
 * ⚡ Static file serving with no config required
 * 🔄 Automatic browser reload via WebSockets
