@@ -57,9 +57,6 @@ func Execute() error {
 }
 
 // init initializes the root command's configuration.
-// This function is reserved for setting up additional top-level flags or configurations.
-// Since subcommands are self-registered in their respective files, no further initialization
-// is required here.
 func init() {
 	rootCmd.PersistentFlags().StringVar(&webRoot, "web-root", "examples/basic", "directory to serve")
 	rootCmd.PersistentFlags().BoolVar(&ssl, "ssl", false, "enable HTTPS")
