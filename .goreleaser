@@ -1,0 +1,29 @@
+version: 2
+
+before:
+  hooks:
+    - go mod tidy
+
+builds:
+  - id: softserve
+    main: ./cmd/main.go
+    binary: softserve
+    env:
+      - CGO_ENABLED=0
+    goos:
+      - linux
+      - darwin
+      - windows
+    goarch:
+      - amd64
+      - arm64
+    ldflags:
+      - -s -w
+
+checksum:
+  name_template: "{{ .ProjectName }}_checksums.txt"
+
+upx:
+  - enabled: true
+    compress: best
+    lzma: true

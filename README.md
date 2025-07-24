@@ -57,10 +57,17 @@ go build -o bin/softserve cmd/main.go
 Or just run directly:
 
 ```bash
-go run cmd/main.go serve
+go run cmd/main.go serve --ssl --api --web-root=examples/api
 ```
 
----
+### Building and Releasing with Goreleaser
+
+A minimal `.goreleaser.yml` is included for building cross platform binaries.
+To create local snapshot artifacts without publishing run:
+
+```bash
+goreleaser release --snapshot --clean --skip archive
+```
 
 ## 📁 Directory Structure
 
