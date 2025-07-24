@@ -1,34 +1,6 @@
-GET /api/user:
-  status: 200
-  headers:
-    Content-Type: application/json
-  body: |
-    {
-    "id": 1,
-    "name": "Jane Doe",
-    "email": "jane@example.com",
-    "username": "jdoe",
-    "created_at": "2023-01-01T12:00:00Z",
-    "last_login": "2024-07-01T08:30:00Z",
-    "role": "admin",
-    "verified": true,
-    "language": "en-US",
-    "timezone": "America/New_York",
-    "subscription_status": "active",
-    "profile_picture": "https://example.com/images/jane.jpg",
-    "phone_number": "+1-555-123-4567",
-    "bio": "Front-end developer and coffee enthusiast.",
-    "preferences": {
-      "theme": "dark",
-      "notifications": true
-    }
-    }
-GET /api/products:
-  status: 200
-  headers:
-    Content-Type: application/json
-  body: |
-    [
+{
+  "status": 200,
+  "body": [
     { "id": 1, "name": "Widget A", "price": 9.99 },
     { "id": 2, "name": "Gadget B", "price": 14.99 },
     { "id": 3, "name": "Tool C", "price": 19.99 },
@@ -49,19 +21,5 @@ GET /api/products:
     { "id": 18, "name": "Tool R", "price": 22.00 },
     { "id": 19, "name": "Accessory S", "price": 4.75 },
     { "id": 20, "name": "Device T", "price": 29.99 }
-    ]
-POST /api/login:
-  status: 401
-  headers:
-    Content-Type: application/json
-  body: |
-    {
-    "message": "Login successful",
-    "token": "abc123"
-    }
-PUT /api/cart:
-  status: 204
-  headers:
-    Content-Type: application/json
-  body: |
-    {}
+  ]
+}

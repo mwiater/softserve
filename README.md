@@ -57,7 +57,7 @@ go build -o bin/softserve cmd/main.go
 Or just run directly:
 
 ```bash
-go run cmd/main.go serve --ssl --api --web-root=examples/api
+go run cmd/main.go serve --ssl --api --web-root=examples/api01
 ```
 
 ### Building and Releasing with Goreleaser
@@ -114,19 +114,35 @@ go run cmd/main.go serve \
 
 ## 📡 Serving Files
 
-To serve files from `--web-root`:
+#### Basic Example
+
+From the root of this repository, simply run with defaults:
 
 ```bash
 go run cmd/main.go serve
 ```
 
-### Example:
-
-```yaml
-web_root: examples/api
+```bash
+📂 Web root: examples/basic
+🌐 Serving HTTP on http://0.0.0.0:8080
 ```
 
 Then visit: [http://localhost:8080](http://localhost:8080)
+
+#### API Mock Xxample (with in-memory SSL):
+
+From the root of this repository, simply run with these flags:
+
+```bash
+go run cmd/main.go serve --ssl --api --web-root=examples/api01
+```
+
+```bash
+📂 Web root: examples/api01
+🌐 Serving HTTP on http://0.0.0.0:8443
+```
+
+Then visit: [https://localhost:8443](https://localhost:8443)
 
 ---
 
@@ -239,14 +255,14 @@ Enable HTTPS by using the `--ssl` flag. Self-signed certificates are generated i
 
 Example:
 ```bash
-go run cmd/main.go serve --web-root examples/api --ssl
+go run cmd/main.go serve --web-root examples/api01 --ssl
 ```
 
 Example output when `generate_certs: true`:
 
 ```
 ✅ Config loaded successfully
-📂 Web root: examples/api
+📂 Web root: examples/api01
 Checking for existing cert path: '/home/matt/projects/softserve/certs'
   Success: Path is an absolute, existing directory.
 🔐 Generated self-signed cert at /home/matt/projects/softserve/certs/
@@ -284,7 +300,7 @@ SSL: Loading Cert files:
 ## ✅ Example Workflow
 
 ```bash
-cp examples/api/* .
+cp examples/api01/* .
 cp api.yaml .
 
 go run cmd/main.go serve

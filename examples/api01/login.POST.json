@@ -1,0 +1,7 @@
+{
+  "status": 201,
+  "body": {
+    "message": "Login successful",
+    "token": "abc123"
+  }
+}

@@ -1,0 +1,26 @@
+{
+  "status": 200,
+  "headers": {
+    "Content-Type": "application/json"
+  },
+  "body": {
+    "id": 1,
+    "name": "Jane Doe",
+    "email": "jane@example.com",
+    "username": "jdoe",
+    "created_at": "2023-01-01T12:00:00Z",
+    "last_login": "2024-07-01T08:30:00Z",
+    "role": "admin",
+    "verified": true,
+    "language": "en-US",
+    "timezone": "America/New_York",
+    "subscription_status": "active",
+    "profile_picture": "https://example.com/images/jane.jpg",
+    "phone_number": "+1-555-123-4567",
+    "bio": "Front-end developer and coffee enthusiast.",
+    "preferences": {
+      "theme": "dark",
+      "notifications": true
+    }
+  }
+}
