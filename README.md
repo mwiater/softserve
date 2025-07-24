@@ -90,17 +90,17 @@ go run cmd/main.go serve
 
 ## 🧾 Configuration
 
-Create a `softserve.yaml` file in your project root:
+Use command line flags to configure the server. Example:
 
-```yaml
-web_root: examples/basic
-ssl: false
-generate_certs: false
-http_port: 8080
-https_port: 8443
-log_level: info
-api: true
-api_prefix: /api/
+```bash
+go run cmd/main.go serve \
+  --web-root examples/basic \
+  --ssl=false \
+  --http-port 8080 \
+  --https-port 8443 \
+  --log-level info \
+  --api=true \
+  --api-prefix /api/
 ```
 
 ---
@@ -149,7 +149,7 @@ The **Mock API** feature in *softserve* is a completely *no-touch* system — it
 ### 🧱 How It Works Behind the Scenes
 
 1. **API Interception**
-   When `api: true` is set in `softserve.yaml`, softserve checks every incoming request to see if:
+   When the `--api` flag is enabled, softserve checks every incoming request to see if:
 
    * The path starts with the configured `api_prefix` (default: `/api/`)
    * The method and path (e.g. `GET /api/users`) exist in `api.yaml`
@@ -177,11 +177,10 @@ The **Mock API** feature in *softserve* is a completely *no-touch* system — it
 
 ### 🧪 Example Flow
 
-#### 1. `softserve.yaml`
+#### 1. Command line flags
 
-```yaml
-api: true
-api_prefix: /api/
+```bash
+--api --api-prefix /api/
 ```
 
 #### 2. `api.yaml`
@@ -229,19 +228,11 @@ curl http://localhost:8080/api/users
 
 ## 🔐 HTTPS (optional)
 
-This tool will autogenerate certs if requested in the `softserve.yaml` config. **If `ssl: true` or `generate_certs: true`, `certs_path` is also required as an absolute path and the `certs_path` must already exist.**
+Enable HTTPS by using the `--ssl` flag. Self-signed certificates are generated in memory automatically.
 
-Example `softserve.yaml`:
-```
-web_root: examples/api
-ssl: true                                        # Must be true for SSL
-certs_path: /home/matt/projects/softserve/certs  # Required if ssl: true
-generate_certs: true                             # Generate self-signed certs
-http_port: 8080
-https_port: 8443
-log_level: info
-api: true
-api_prefix: /api/
+Example:
+```bash
+go run cmd/main.go serve --web-root examples/api --ssl
 ```
 
 Example output when `generate_certs: true`:
@@ -256,7 +247,6 @@ SSL: Loading Cert files:
   >>> /home/matt/projects/softserve/certs/cert.pem
   >>> /home/matt/projects/softserve/certs/key.pem
 🔒 Serving HTTPS on https://0.0.0.0:8443
-
 ```
 
 ---
@@ -270,9 +260,7 @@ SSL: Loading Cert files:
 
 ---
 
-## 🧰 CLI Options (planned)
-
-In addition to `softserve.yaml`, future releases will support:
+## 🧰 CLI Options
 
 | Flag               | Description                    |
 | ------------------ | ------------------------------ |
@@ -291,7 +279,6 @@ In addition to `softserve.yaml`, future releases will support:
 ```bash
 cp examples/api/* .
 cp api.yaml .
-cp softserve.yaml .
 
 go run cmd/main.go serve
 ```

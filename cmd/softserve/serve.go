@@ -12,8 +12,7 @@ var serveCmd = &cobra.Command{
 	Short: "serve",
 	Long:  `serve`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		//return softserve.StartServer()
-		return softserve.StartServerInternalCerts()
+		return softserve.StartServer()
 	},
 }
 

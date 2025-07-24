@@ -3,10 +3,19 @@ package cmd
 
 import (
 	"fmt"
-	"os"
 
 	"github.com/mwiater/softserve"
 	"github.com/spf13/cobra"
+)
+
+var (
+	webRoot   string
+	ssl       bool
+	httpPort  int
+	httpsPort int
+	logLevel  string
+	api       bool
+	apiPrefix string
 )
 
 // rootCmd is the base command for the softserve application.
@@ -17,11 +26,28 @@ var rootCmd = &cobra.Command{
 	Short: "Local static server with live reload and API mocking",
 	Long: `Softserve is a lightweight local static file server tailored for frontend development.
 It supports automatic browser reloads on file changes, static API mocking, and optional HTTPS serving.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		cfg := softserve.Config{
+			WebRoot:   webRoot,
+			SSL:       ssl,
+			HTTPPort:  httpPort,
+			HTTPSPort: httpsPort,
+			LogLevel:  logLevel,
+			API:       api,
+			APIPrefix: apiPrefix,
+		}
+		softserve.InitConfig(cfg)
+		if cfg.API {
+			if err := softserve.LoadAPIResponses(); err != nil {
+				return fmt.Errorf("failed to load api.yaml: %w", err)
+			}
+		}
+		fmt.Printf("📂 Web root: %s\n", cfg.WebRoot)
+		return nil
+	},
 }
 
-// Execute executes the root command along with any registered subcommands.
-// If the command execution results in an error, the error is printed and the program exits
-// with a non-zero status code.
+// Execute runs the root command and handles any errors that occur during execution.
 func Execute() error {
 	if err := rootCmd.Execute(); err != nil {
 		return fmt.Errorf("failed to execute rootCmd: %w", err)
@@ -35,10 +61,11 @@ func Execute() error {
 // Since subcommands are self-registered in their respective files, no further initialization
 // is required here.
 func init() {
-	if err := softserve.LoadConfig(); err != nil {
-		fmt.Printf("failed to load config: %w", err)
-		os.Exit(1)
-	}
-	fmt.Println("✅ Config loaded successfully")
-	fmt.Printf("📂 Web root: %s\n", softserve.AppConfig.WebRoot)
+	rootCmd.PersistentFlags().StringVar(&webRoot, "web-root", "examples/basic", "directory to serve")
+	rootCmd.PersistentFlags().BoolVar(&ssl, "ssl", false, "enable HTTPS")
+	rootCmd.PersistentFlags().IntVar(&httpPort, "http-port", 8080, "HTTP port")
+	rootCmd.PersistentFlags().IntVar(&httpsPort, "https-port", 8443, "HTTPS port")
+	rootCmd.PersistentFlags().StringVar(&logLevel, "log-level", "info", "log level")
+	rootCmd.PersistentFlags().BoolVar(&api, "api", false, "enable API mocking")
+	rootCmd.PersistentFlags().StringVar(&apiPrefix, "api-prefix", "/api/", "API prefix")
 }

@@ -1,9 +1,0 @@
-web_root: examples/sb-admin-2
-ssl: true
-certs_path: /home/matt/projects/softserve/certs
-generate_certs: true
-http_port: 8080
-https_port: 8443
-log_level: info
-api: true
-api_prefix: /api/

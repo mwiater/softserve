@@ -33,11 +33,11 @@ func LoadAPIResponses() error {
 }
 
 func HandleAPIRequest(w http.ResponseWriter, r *http.Request) bool {
-	if !AppConfig.API {
+	if !GetConfig().API {
 		return false
 	}
 
-	prefix := AppConfig.APIPrefix
+	prefix := GetConfig().APIPrefix
 	if prefix == "" {
 		prefix = "/api/"
 	}

@@ -20,6 +20,8 @@ import (
 	"time"
 )
 
+// StartServer starts the server, generating self-signed certificates
+// in memory if SSL is enabled, instead of loading them from files.
 func StartServer() error {
 	hub := newReloadHub()
 
@@ -38,7 +40,7 @@ func StartServer() error {
 		serveFileWithInjection(w, r)
 	})
 
-	go watchForChanges(AppConfig.WebRoot, hub)
+	go watchForChanges(GetConfig().WebRoot, hub)
 
 	server := &http.Server{
 		Addr:    "", // Set below
@@ -48,82 +50,7 @@ func StartServer() error {
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
-	if AppConfig.SSL {
-		// Default fallback
-		if AppConfig.CertsPath == "" {
-			AppConfig.CertsPath = "certs"
-		}
-
-		certPath := filepath.Join(AppConfig.CertsPath, "cert.pem")
-		keyPath := filepath.Join(AppConfig.CertsPath, "key.pem")
-
-		if AppConfig.GenerateCerts {
-			if err := GenerateSelfSignedCert(AppConfig.CertsPath); err != nil {
-				return fmt.Errorf("cert generation failed: %w", err)
-			}
-		}
-
-		fmt.Println("SSL: Loading Cert files:")
-		fmt.Println("  >>>", certPath)
-		fmt.Println("  >>>", keyPath)
-
-		server.Addr = fmt.Sprintf(":%d", AppConfig.HTTPSPort)
-		go func() {
-			fmt.Printf("🔒 Serving HTTPS on https://0.0.0.0:%d\n", AppConfig.HTTPSPort)
-			if err := server.ListenAndServeTLS(certPath, keyPath); err != http.ErrServerClosed {
-				log.Fatalf("Server error: %v", err)
-			}
-
-		}()
-	} else {
-		server.Addr = fmt.Sprintf(":%d", AppConfig.HTTPPort)
-		go func() {
-			fmt.Printf("🌐 Serving HTTP on http://0.0.0.0:%d\n", AppConfig.HTTPPort)
-			if err := server.ListenAndServe(); err != http.ErrServerClosed {
-				log.Fatalf("Server error: %v", err)
-			}
-		}()
-	}
-
-	<-ctx.Done()
-	fmt.Println("🛑 Shutting down...")
-
-	shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	return server.Shutdown(shutdownCtx)
-}
-
-// StartServerInternalCerts starts the server, generating self-signed certificates
-// in memory if SSL is enabled, instead of loading them from files.
-func StartServerInternalCerts() error {
-	hub := newReloadHub()
-
-	mux := http.NewServeMux()
-
-	// WebSocket endpoint
-	mux.Handle("/__ws", http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		hub.handleWebSocket(w, r)
-	}))
-
-	// Static + API + injected HTML handler
-	mux.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
-		if HandleAPIRequest(w, r) {
-			return
-		}
-		serveFileWithInjection(w, r)
-	})
-
-	go watchForChanges(AppConfig.WebRoot, hub)
-
-	server := &http.Server{
-		Addr:    "", // Set below
-		Handler: mux,
-	}
-
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
-	defer stop()
-
-	if AppConfig.SSL {
+	if GetConfig().SSL {
 		// Generate internal self-signed certs
 		cert, err := GenerateInternalSelfSignedCert()
 		if err != nil {
@@ -134,20 +61,20 @@ func StartServerInternalCerts() error {
 			Certificates: []tls.Certificate{cert},
 		}
 
-		server.Addr = fmt.Sprintf(":%d", AppConfig.HTTPSPort)
+		server.Addr = fmt.Sprintf(":%d", GetConfig().HTTPSPort)
 		server.TLSConfig = tlsConfig // Assign the TLS config to the server
 
 		go func() {
-			fmt.Printf("🔒 Serving HTTPS on https://0.0.0.0:%d (in-memory certs)\n", AppConfig.HTTPSPort)
+			fmt.Printf("🔒 Serving HTTPS on https://0.0.0.0:%d (in-memory certs)\n", GetConfig().HTTPSPort)
 			// When TLSConfig is set on the server, ListenAndServeTLS can be called with empty paths
 			if err := server.ListenAndServeTLS("", ""); err != http.ErrServerClosed {
 				log.Fatalf("Server error with internal certs: %v", err)
 			}
 		}()
 	} else {
-		server.Addr = fmt.Sprintf(":%d", AppConfig.HTTPPort)
+		server.Addr = fmt.Sprintf(":%d", GetConfig().HTTPPort)
 		go func() {
-			fmt.Printf("🌐 Serving HTTP on http://0.0.0.0:%d\n", AppConfig.HTTPPort)
+			fmt.Printf("🌐 Serving HTTP on http://0.0.0.0:%d\n", GetConfig().HTTPPort)
 			if err := server.ListenAndServe(); err != http.ErrServerClosed {
 				log.Fatalf("Server error: %v", err)
 			}
@@ -167,7 +94,7 @@ func serveFileWithInjection(w http.ResponseWriter, r *http.Request) {
 	if relPath == "" {
 		relPath = "index.html"
 	}
-	fullPath := filepath.Join(AppConfig.WebRoot, relPath)
+	fullPath := filepath.Join(GetConfig().WebRoot, relPath)
 
 	if strings.HasSuffix(fullPath, ".html") {
 		data, err := os.ReadFile(fullPath)
@@ -186,7 +113,7 @@ func serveFileWithInjection(w http.ResponseWriter, r *http.Request) {
 
 func injectReloadScript(html string) string {
 	wsScheme := "ws"
-	if AppConfig.SSL {
+	if GetConfig().SSL {
 		wsScheme = "wss"
 	}
 
