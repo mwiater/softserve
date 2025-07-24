@@ -1,4 +1,4 @@
-web_root: examples/api
+web_root: examples/sb-admin-2
 ssl: true
 certs_path: /home/matt/projects/softserve/certs
 generate_certs: true
