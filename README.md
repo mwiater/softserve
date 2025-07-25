@@ -1,5 +1,7 @@
 ## softserve
 
+![Softserve Gopher Mascot](softserve-sm.png)
+
 **NOTE:** Flipping this repo public as I've been using it a lot and a coworker asked me for the code. **It's still at the beginning stages**, but it's in a working state. Use wisely and at your own discretion! It's part of my current no-code instrumentation/tool kick.
 
 ## Features
